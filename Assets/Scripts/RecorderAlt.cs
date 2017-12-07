@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class RecorderAlt : MonoBehaviour {
 
+    private GameObject playerRef;
+    private Detector playerDetector;
+
     public static RecorderAlt instance;
     public int maxFramesToRecord = 100000;
     public int maxPlaybacks = 10;
@@ -88,6 +91,10 @@ public class RecorderAlt : MonoBehaviour {
             Debug.LogError("There should only be one Recording script active in the scene!!");
             Destroy(gameObject);
         }
+
+        playerRef = GameObject.FindGameObjectWithTag("Player");
+        playerDetector = playerRef.GetComponent<Detector>();
+
         itemsPlayingBack = new PlayBackItems[maxPlaybacks];
 
         for (int i = 0; i < itemsToRecord.Length; ++i)
@@ -141,6 +148,8 @@ public class RecorderAlt : MonoBehaviour {
                 tempRecord = (RecordedData[])itemsToRecord[i].recordedData.Clone();
                 itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemsToRecord[i].target.gameObject);
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<PlaybackItem>().preRecordedData = tempRecord;
+                itemsPlayingBack[indexOfPlaybacks].objs[i].tag = "Guard";
+                playerDetector.guards.Add(itemsPlayingBack[indexOfPlaybacks].objs[i].transform);
             }
             indexOfPlaybacks++;
         }
