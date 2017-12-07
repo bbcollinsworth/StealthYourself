@@ -14,14 +14,20 @@ public class Mover : MonoBehaviour {
     Vector3 directionMoved, velocity = Vector3.zero;
     float distanceMoved = 0;
 
+    public float playerMotion = 0;
+
     private Transform _transform;
     private Rigidbody _rigidbody;
+
+    [HideInInspector]
+    public Vector3 playerStart;
 
 	void Start () {
         _transform = transform;
         _rigidbody = GetComponent<Rigidbody>();
         //targetPosition = transform.position;
         lastPositions = new Vector3[controllers.Length];
+        playerStart = transform.position;
         
 	}
 	
@@ -37,7 +43,7 @@ public class Mover : MonoBehaviour {
             if (controllers[i].stateOfHand == handState.CLOSED)
             {
                 
-                Debug.Log("Moving!");
+                //Debug.Log("Moving!");
                 Vector3 dir = FlattenVector(controllerPos - lastPositions[i]);
                 float dist = dir.magnitude;
                 distanceMoved = dist > distanceMoved ? dist : distanceMoved;
@@ -51,13 +57,12 @@ public class Mover : MonoBehaviour {
 
         directionMoved = directionMoved.normalized * distanceMoved * motionOverdrive;
         velocity = Vector3.Lerp(-directionMoved, velocity, motionSmoothing);
-        //_transform.position -= directionMoved;
-        //_transform.position += velocity;
         _rigidbody.AddForce(velocity);
-        //directionMoved *= decay;
+
+        playerMotion = _rigidbody.velocity.magnitude;
 	}
 
-    Vector3 FlattenVector(Vector3 vecToFlatten)
+    public Vector3 FlattenVector(Vector3 vecToFlatten)
     {
         return new Vector3(vecToFlatten.x, 0, vecToFlatten.z);
     }
