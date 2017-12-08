@@ -19,6 +19,8 @@ public class Detector : MonoBehaviour {
 
     public AnimationCurve detectionCurve = AnimationCurve.Linear(0, 1, 1, 0);
 
+    public float timeTilCaught = 1.0f;
+
     [Header("Motion Detection")]
     public float minMotionThreshold = 0.1f;
     public float maxMotion = 1;
@@ -27,6 +29,7 @@ public class Detector : MonoBehaviour {
     public Transform alertsParent;
     public GameObject alertPrefab;
     public Gradient alertGradient = new Gradient();
+    public AudioClip caughtSound;
 
     private Material alertMaterial;
 
@@ -35,6 +38,8 @@ public class Detector : MonoBehaviour {
 
     [HideInInspector]
     public List<Guard> guards;
+    [HideInInspector]
+    public bool shouldDetect = true;
 
     [HideInInspector]
     public Mover mover;
@@ -46,10 +51,12 @@ public class Detector : MonoBehaviour {
     }
 
 	void Update () {
-       for (int i = 0; i<guards.Count; ++i)
+        if (!shouldDetect)
+            return;
+
+        for (int i = 0; i<guards.Count; ++i)
         {
             guards[i].DetectionCheck();
-            //DetectionCheck(ref guards[i]);
         }
     }
 
@@ -64,12 +71,6 @@ public class Detector : MonoBehaviour {
         return false;
     }
 
-
-    float GetProximity(Vector3 toTarget)
-    {
-        var normalizedDistance = Mathf.Clamp01(toTarget.sqrMagnitude / Mathf.Pow(detectionRange, 2));
-        return detectionCurve.Evaluate(normalizedDistance);
-    }
 
     bool MotionDetected()
     {

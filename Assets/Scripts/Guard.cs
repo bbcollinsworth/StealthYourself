@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class Guard : MonoBehaviour {
 
-    public Transform alert;
-    public Material alertMaterial;
+    private Transform alert;
+    private AudioSource alertSound;
+    private Material alertMaterial;
     public float angleToDirectView;
     public float detectionLevel;
     private Detector _detector;
     private PlaybackItem _playbackItem;
+
+    private bool caughtCheckRunning = false;
+    private float caughtCounter;
 
 
     public void Init(Detector detector)
@@ -22,9 +26,13 @@ public class Guard : MonoBehaviour {
 
         alert = Instantiate<GameObject>(_detector.alertPrefab, _detector.alertsParent).transform;
         alertMaterial = alert.GetComponentInChildren<MeshRenderer>().material;
+        alertSound = alert.GetComponentInChildren<AudioSource>();
 
         angleToDirectView = -1;
         detectionLevel = 0;
+        alertSound.volume = 0;
+        alertSound.pitch = 0.5f;
+        caughtCounter = 0;
 
         Debug.LogWarning("New Guard Initialized!");
     }
@@ -41,7 +49,9 @@ public class Guard : MonoBehaviour {
         float desiredDetectionLevel = viewObstructed ? 0 : Mathf.Clamp01(angleToDirectView / _detector.fullDetectionTolerance);
         Debug.Log(desiredDetectionLevel + " Desired Detection Level");
 
-        float detectionIncrement = Mathf.Clamp(desiredDetectionLevel-detectionLevel, -_detector.detectionSensitivity, _detector.detectionSensitivity);
+        //makes further away targets take longer to detect you... but applying to above would mean they'd never fully detect until you got closer
+        var speedClamp = _detector.detectionSensitivity*GetProximity(vecToTarget);
+        float detectionIncrement = Mathf.Clamp(desiredDetectionLevel-detectionLevel, -_detector.detectionSensitivity * 2, speedClamp);
         Debug.Log(detectionIncrement + " Increment");
         detectionLevel += detectionIncrement;
         //guard.detectionLevel = Mathf.Lerp(guard.detectionLevel, desiredDetectionLevel, detectionSensitivity);
@@ -49,10 +59,33 @@ public class Guard : MonoBehaviour {
 
         SetAlertColor();
         RotateAlert(vecToTarget);
+        SetAlertSound();
 
         _playbackItem.UpdateTransform(Quaternion.LookRotation(-vecToTarget), detectionLevel);
 
         Debug.DrawRay(transform.position, vecToTarget, drawColor, 0.1f);
+
+        CaughtCheck();
+
+    }
+
+    void CaughtCheck()
+    {
+        if (caughtCounter >= _detector.timeTilCaught)
+        {
+            caughtCounter = 0;
+            Caught();
+            return;
+        }
+
+        if (detectionLevel >= 1)
+        {
+            caughtCounter += Time.deltaTime;
+            return;
+        }
+
+        caughtCounter = 0;
+      
     }
 
     public bool ViewObstructed(Vector3 playerToGuard)
@@ -68,6 +101,12 @@ public class Guard : MonoBehaviour {
         }
 
         return true;
+    }
+
+    float GetProximity(Vector3 toTarget)
+    {
+        var normalizedDistance = Mathf.Clamp01(toTarget.sqrMagnitude / Mathf.Pow(_detector.detectionRange, 2));
+        return _detector.detectionCurve.Evaluate(normalizedDistance);
     }
 
     void RotateAlert(Vector3 vecToGuard)
@@ -87,5 +126,25 @@ public class Guard : MonoBehaviour {
     {
         Color alertColor = _detector.alertGradient.Evaluate(detectionLevel);
         alertMaterial.color = alertColor;
+    }
+
+    void SetAlertSound()
+    {
+        alertSound.volume = detectionLevel;
+        alertSound.pitch = 0.5f + detectionLevel * 0.5f;
+    }
+
+
+    void Caught()
+    {
+        _detector.shouldDetect = false;
+        detectionLevel = 0;
+        alertSound.Stop();
+        alertSound.loop = false;
+        alertSound.clip = _detector.caughtSound;
+        alertSound.volume = 1;
+        alertSound.pitch = 1;
+        alertSound.Play();
+       
     }
 }
