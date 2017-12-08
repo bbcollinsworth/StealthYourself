@@ -35,7 +35,10 @@ public class Detector : MonoBehaviour {
 
     [HideInInspector]
     public Transform playerHead;
-
+    [HideInInspector]
+    public AudioSource music;
+    [HideInInspector]
+    public float musicBaseVolume;
     [HideInInspector]
     public List<Guard> guards;
     [HideInInspector]
@@ -48,6 +51,8 @@ public class Detector : MonoBehaviour {
         playerHead = GameObject.FindGameObjectWithTag("PlayerHead").transform;
         mover = GetComponent<Mover>();
         List<Guard> guards = new List<Guard>();
+        music = GameObject.FindGameObjectWithTag("MusicSource").GetComponent<AudioSource>();
+        musicBaseVolume = music.volume;
     }
 
 	void Update () {

@@ -132,6 +132,8 @@ public class Guard : MonoBehaviour {
     {
         alertSound.volume = detectionLevel;
         alertSound.pitch = 0.5f + detectionLevel * 0.5f;
+
+        _detector.music.volume = Mathf.Clamp(detectionLevel,_detector.musicBaseVolume, 1);
     }
 
 
@@ -139,6 +141,7 @@ public class Guard : MonoBehaviour {
     {
         _detector.shouldDetect = false;
         detectionLevel = 0;
+        _detector.music.volume = _detector.musicBaseVolume;
         alertSound.Stop();
         alertSound.loop = false;
         alertSound.clip = _detector.caughtSound;
