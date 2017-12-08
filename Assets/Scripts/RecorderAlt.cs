@@ -148,12 +148,9 @@ public class RecorderAlt : MonoBehaviour {
                 tempRecord = (RecordedData[])itemsToRecord[i].recordedData.Clone();
                 itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemsToRecord[i].target.gameObject);
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<PlaybackItem>().preRecordedData = tempRecord;
-                itemsPlayingBack[indexOfPlaybacks].objs[i].tag = "Guard";
-                playerDetector.guards.Add(new Detector.Guard(
-                    itemsPlayingBack[indexOfPlaybacks].objs[i].transform,
-                    playerDetector.alertPrefab,
-                    playerDetector.alertsParent
-                    ));
+                itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<Guard>().Init(playerDetector);
+                //itemsPlayingBack[indexOfPlaybacks].objs[i].tag = "Guard";
+                //playerDetector.guards.Add(new Guard(itemsPlayingBack[indexOfPlaybacks].objs[i].transform,playerDetector));
             }
             indexOfPlaybacks++;
         }
