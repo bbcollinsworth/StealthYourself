@@ -34,16 +34,31 @@ public class PlaybackItem : MonoBehaviour {
     public void Update()
     {
 
-        UpdateTransform(_currFrame);
+        //UpdateTransform(_currFrame);
+
+        //IncrementFrame();
+    }
+
+    public void UpdateTransform()
+    {
+        var targetIndex = _currFrame;
+
+        _thisTransform.position = preRecordedData[targetIndex].position;
+        _thisTransform.rotation = preRecordedData[targetIndex].rotation;
+        _thisTransform.localScale = preRecordedData[targetIndex].scale;
 
         IncrementFrame();
     }
 
-    void UpdateTransform(int targetIndex)
+    public void UpdateTransform(Quaternion desiredRotation, float t)
     {
+        var targetIndex = _currFrame;
+
         _thisTransform.position = preRecordedData[targetIndex].position;
-        _thisTransform.rotation = preRecordedData[targetIndex].rotation;
+        _thisTransform.rotation = Quaternion.Slerp(preRecordedData[targetIndex].rotation, desiredRotation,t);
         _thisTransform.localScale = preRecordedData[targetIndex].scale;
+
+        IncrementFrame();
     }
 
     void IncrementFrame()
