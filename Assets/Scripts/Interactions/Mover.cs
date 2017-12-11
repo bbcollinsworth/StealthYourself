@@ -22,16 +22,23 @@ public class Mover : MonoBehaviour {
     [HideInInspector]
     public Vector3 playerStart;
 
+    [HideInInspector]
+    public bool canMove = true;
+
 	void Start () {
         _transform = transform;
         _rigidbody = GetComponent<Rigidbody>();
         //targetPosition = transform.position;
         lastPositions = new Vector3[controllers.Length];
         playerStart = transform.position;
+        canMove = true;
         
 	}
 	
 	void Update () {
+
+        if (!canMove)
+            return;
 
         directionMoved = Vector3.zero;
         distanceMoved = 0;

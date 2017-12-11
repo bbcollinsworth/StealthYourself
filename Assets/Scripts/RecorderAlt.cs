@@ -13,7 +13,7 @@ public class RecorderAlt : MonoBehaviour {
 
     private int indexOfPlaybacks = 0;
 
-    public bool beginRecording = false;
+    public bool record = false;
     private bool reInit = false;
 
 
@@ -104,19 +104,11 @@ public class RecorderAlt : MonoBehaviour {
     }
 	
 	void Update () {
-
+  
         if (currentFrame >= maxFramesToRecord)
             return;
 
-        if (reInit)
-        {
-            reInit = false;
-            for (int i = 0; i < itemsToRecord.Length; ++i)
-            {
-                itemsToRecord[i].Init(maxFramesToRecord);
-            }
-        }
-        if (beginRecording)
+        if (record)
         {
             for (int i = 0; i < itemsToRecord.Length; ++i)
             {
@@ -124,20 +116,35 @@ public class RecorderAlt : MonoBehaviour {
             }
             currentFrame++;
         }
-        else if (!beginRecording && currentFrame > 0)
-        {
-            currentFrame = 0;
-            //Begin Playback
-            SpawnRecording();
 
+        //NEED TO TURN THIS INTO A FUNCTION CALL
+        if (reInit)
+        {
+            reInit = false;
+            for (int i = 0; i < itemsToRecord.Length; ++i)
+            {
+                itemsToRecord[i].Init(maxFramesToRecord);
+            }
+            currentFrame = 0;
+            record = true;
         }
+        
+        //else if (!beginRecording && currentFrame > 0)
+        //{
+        //    currentFrame = 0;
+        //    //Begin Playback
+        //    SpawnRecording();
+
+        //}
 
     }
 
-    void SpawnRecording()
+    public void SpawnRecording()
     {
-       // Debug.Log("PlayingBack");
-        reInit = true;
+        Debug.Log("PlayingBack");
+        record = false;
+        
+        
         if (indexOfPlaybacks < maxPlaybacks)
         {
             itemsPlayingBack[indexOfPlaybacks].Init(itemsToRecord.Length);
@@ -149,10 +156,10 @@ public class RecorderAlt : MonoBehaviour {
                 itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemsToRecord[i].target.gameObject);
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<PlaybackItem>().preRecordedData = tempRecord;
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<Guard>().Init(playerDetector);
-                //itemsPlayingBack[indexOfPlaybacks].objs[i].tag = "Guard";
-                //playerDetector.guards.Add(new Guard(itemsPlayingBack[indexOfPlaybacks].objs[i].transform,playerDetector));
             }
             indexOfPlaybacks++;
+            reInit = true;
+            
         }
         else
         {

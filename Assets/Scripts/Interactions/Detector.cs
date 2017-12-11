@@ -47,9 +47,12 @@ public class Detector : MonoBehaviour {
     [HideInInspector]
     public Mover mover;
 
+    private ProgressManager progressManager;
+
     void Start () {
         playerHead = GameObject.FindGameObjectWithTag("PlayerHead").transform;
         mover = GetComponent<Mover>();
+        progressManager = GameObject.FindGameObjectWithTag("ProgressManager").GetComponent<ProgressManager>();
         List<Guard> guards = new List<Guard>();
         music = GameObject.FindGameObjectWithTag("MusicSource").GetComponent<AudioSource>();
         musicBaseVolume = music.volume;
@@ -63,6 +66,27 @@ public class Detector : MonoBehaviour {
         {
             guards[i].DetectionCheck();
         }
+    }
+
+    public void Caught(Guard guardThatCaught)
+    {
+        shouldDetect = false;
+        music.volume = musicBaseVolume;
+
+        guardThatCaught.PlayCaughtAlert();
+
+        for (int i = 0; i < guards.Count; ++i)
+        {
+            guards[i].detectionLevel = 0;
+        }
+
+        progressManager.OnFadeInStart += RestartDetection;
+        progressManager.Restart();
+    }
+
+    private void RestartDetection()
+    {
+        shouldDetect = true;
     }
 
     bool InFOV(Vector3 toTarget, Vector3 guardLook)

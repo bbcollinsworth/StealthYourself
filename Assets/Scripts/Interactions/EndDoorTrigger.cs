@@ -4,22 +4,22 @@ using UnityEngine;
 
 public class EndDoorTrigger : MonoBehaviour {
 
-    public RecorderAlt recorderRef;
+    //public RecorderAlt recorderRef;
+    public ProgressManager progressManager;
 
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    public bool activeDoor = false;
+
+    public void Init(ProgressManager pManager)
+    {
+        progressManager = pManager;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && activeDoor)
         {
-            recorderRef.beginRecording = false;
+            progressManager.Advance();
+            //recorderRef.beginRecording = false;
         }
     }
 }

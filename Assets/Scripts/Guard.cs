@@ -47,15 +47,15 @@ public class Guard : MonoBehaviour {
         //Debug.Log("View obstructed is " + viewObstructed);
 
         float desiredDetectionLevel = viewObstructed ? 0 : Mathf.Clamp01(angleToDirectView / _detector.fullDetectionTolerance);
-        Debug.Log(desiredDetectionLevel + " Desired Detection Level");
+        //Debug.Log(desiredDetectionLevel + " Desired Detection Level");
 
         //makes further away targets take longer to detect you... but applying to above would mean they'd never fully detect until you got closer
         var speedClamp = _detector.detectionSensitivity*GetProximity(vecToTarget);
         float detectionIncrement = Mathf.Clamp(desiredDetectionLevel-detectionLevel, -_detector.detectionSensitivity * 2, speedClamp);
-        Debug.Log(detectionIncrement + " Increment");
+       // Debug.Log(detectionIncrement + " Increment");
         detectionLevel += detectionIncrement;
         //guard.detectionLevel = Mathf.Lerp(guard.detectionLevel, desiredDetectionLevel, detectionSensitivity);
-        Debug.Log(detectionLevel + " Detection Level");
+        //Debug.Log(detectionLevel + " Detection Level");
 
         SetAlertColor();
         RotateAlert(vecToTarget);
@@ -74,7 +74,7 @@ public class Guard : MonoBehaviour {
         if (caughtCounter >= _detector.timeTilCaught)
         {
             caughtCounter = 0;
-            Caught();
+            _detector.Caught(this);
             return;
         }
 
@@ -111,6 +111,9 @@ public class Guard : MonoBehaviour {
 
     void RotateAlert(Vector3 vecToGuard)
     {
+        if (!alert.gameObject.activeSelf)
+            return;
+
         vecToGuard = _detector.mover.FlattenVector(vecToGuard).normalized;
         float rotAmount = Mathf.Acos(Vector3.Dot(_detector.mover.FlattenVector(_detector.alertsParent.forward).normalized, vecToGuard));
 
@@ -124,6 +127,18 @@ public class Guard : MonoBehaviour {
 
     void SetAlertColor()
     {
+        if (detectionLevel <= 0)
+            if (!alert.gameObject.activeSelf)
+                return;
+            else
+            {
+                alert.gameObject.SetActive(false);
+                return;
+            }
+
+        if (!alert.gameObject.activeSelf)
+            alert.gameObject.SetActive(true);
+
         Color alertColor = _detector.alertGradient.Evaluate(detectionLevel);
         alertMaterial.color = alertColor;
     }
@@ -133,9 +148,21 @@ public class Guard : MonoBehaviour {
         alertSound.volume = detectionLevel;
         alertSound.pitch = 0.5f + detectionLevel * 0.5f;
 
-        _detector.music.volume = Mathf.Clamp(detectionLevel,_detector.musicBaseVolume, 1);
+       // var musicVolume = Mathf.Clamp(detectionLevel, _detector.musicBaseVolume, 1);
+        //if (musicVolume > _detector.music.volume)
+
+        //_detector.music.volume = Mathf.Clamp(detectionLevel,_detector.musicBaseVolume, 1);
     }
 
+    public void PlayCaughtAlert()
+    {
+        alertSound.Stop();
+        alertSound.loop = false;
+        alertSound.clip = _detector.caughtSound;
+        alertSound.volume = 1;
+        alertSound.pitch = 1;
+        alertSound.Play();
+    }
 
     void Caught()
     {
