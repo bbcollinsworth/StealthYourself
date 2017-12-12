@@ -22,20 +22,30 @@ public class Mover : MonoBehaviour {
     [HideInInspector]
     public Vector3 playerStart;
 
-    [HideInInspector]
-    public bool canMove = true;
+    //[HideInInspector]
+    private bool canMove = false;
 
-	void Start () {
+	//void Start () {
+
+ //       _transform = transform;
+ //       _rigidbody = GetComponent<Rigidbody>();
+ //       //targetPosition = transform.position;
+ //       lastPositions = new Vector3[controllers.Length];
+ //       playerStart = transform.position;
+ //       //canMove = true;
+        
+	//}
+
+    public void Init()
+    {
+        canMove = false;
         _transform = transform;
         _rigidbody = GetComponent<Rigidbody>();
-        //targetPosition = transform.position;
         lastPositions = new Vector3[controllers.Length];
         playerStart = transform.position;
-        canMove = true;
-        
-	}
-	
-	void Update () {
+    }
+
+    void Update () {
 
         if (!canMove)
             return;
@@ -68,6 +78,11 @@ public class Mover : MonoBehaviour {
 
         playerMotion = _rigidbody.velocity.magnitude;
 	}
+
+    public void AllowMovement(bool allowed)
+    {
+        canMove = allowed;
+    }
 
     public Vector3 FlattenVector(Vector3 vecToFlatten)
     {

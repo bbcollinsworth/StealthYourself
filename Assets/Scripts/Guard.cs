@@ -11,6 +11,7 @@ public class Guard : MonoBehaviour {
     public float detectionLevel;
     private Detector _detector;
     private PlaybackItem _playbackItem;
+    private AudioClip defaultAlertClip;
 
     private bool caughtCheckRunning = false;
     private float caughtCounter;
@@ -32,6 +33,7 @@ public class Guard : MonoBehaviour {
         detectionLevel = 0;
         alertSound.volume = 0;
         alertSound.pitch = 0.5f;
+        defaultAlertClip = alertSound.clip;
         caughtCounter = 0;
 
         Debug.LogWarning("New Guard Initialized!");
@@ -162,19 +164,26 @@ public class Guard : MonoBehaviour {
         alertSound.volume = 1;
         alertSound.pitch = 1;
         alertSound.Play();
+        StartCoroutine(ResetAlertSound());
     }
 
-    void Caught()
+    IEnumerator ResetAlertSound()
     {
-        _detector.shouldDetect = false;
-        detectionLevel = 0;
-        _detector.music.volume = _detector.musicBaseVolume;
-        alertSound.Stop();
-        alertSound.loop = false;
-        alertSound.clip = _detector.caughtSound;
-        alertSound.volume = 1;
-        alertSound.pitch = 1;
-        alertSound.Play();
-       
+        yield return new WaitForSeconds(_detector.caughtSound.length);
+        alertSound.clip = defaultAlertClip;
     }
+
+    //void Caught()
+    //{
+    //    _detector.shouldDetect = false;
+    //    detectionLevel = 0;
+    //    _detector.music.volume = _detector.musicBaseVolume;
+    //    alertSound.Stop();
+    //    alertSound.loop = false;
+    //    alertSound.clip = _detector.caughtSound;
+    //    alertSound.volume = 1;
+    //    alertSound.pitch = 1;
+    //    alertSound.Play();
+       
+    //}
 }

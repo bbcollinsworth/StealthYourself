@@ -29,6 +29,7 @@ public class Detector : MonoBehaviour {
     public Transform alertsParent;
     public GameObject alertPrefab;
     public Gradient alertGradient = new Gradient();
+    //public AudioClip detectedSound;
     public AudioClip caughtSound;
 
     private Material alertMaterial;
@@ -42,23 +43,33 @@ public class Detector : MonoBehaviour {
     [HideInInspector]
     public List<Guard> guards;
     [HideInInspector]
-    public bool shouldDetect = true;
+    private bool shouldDetect = false;
 
     [HideInInspector]
     public Mover mover;
+    [HideInInspector]
+    public ProgressManager progressManager;
 
-    private ProgressManager progressManager;
+    //void Start () {
+    //    playerHead = GameObject.FindGameObjectWithTag("PlayerHead").transform;
+    //    //mover = GetComponent<Mover>();
+    //    //progressManager = GameObject.FindGameObjectWithTag("ProgressManager").GetComponent<ProgressManager>();
+    //    List<Guard> guards = new List<Guard>();
+    //    music = GameObject.FindGameObjectWithTag("MusicSource").GetComponent<AudioSource>();
+    //    musicBaseVolume = music.volume;
+    //}
 
-    void Start () {
-        playerHead = GameObject.FindGameObjectWithTag("PlayerHead").transform;
+    public void Init(ProgressManager pManager)
+    {
+        progressManager = pManager;
         mover = GetComponent<Mover>();
-        progressManager = GameObject.FindGameObjectWithTag("ProgressManager").GetComponent<ProgressManager>();
+        playerHead = GameObject.FindGameObjectWithTag("PlayerHead").transform;
         List<Guard> guards = new List<Guard>();
         music = GameObject.FindGameObjectWithTag("MusicSource").GetComponent<AudioSource>();
         musicBaseVolume = music.volume;
     }
 
-	void Update () {
+    void Update () {
         if (!shouldDetect)
             return;
 
@@ -70,21 +81,24 @@ public class Detector : MonoBehaviour {
 
     public void Caught(Guard guardThatCaught)
     {
-        shouldDetect = false;
-        music.volume = musicBaseVolume;
-
+        //StopDetection();
         guardThatCaught.PlayCaughtAlert();
 
+        //progressManager.OnFadeInStart += StartDetection;
+        progressManager.Restart();
+    }
+
+    public void StopDetection()
+    {
+        shouldDetect = false;
+        music.volume = musicBaseVolume;
         for (int i = 0; i < guards.Count; ++i)
         {
             guards[i].detectionLevel = 0;
         }
-
-        progressManager.OnFadeInStart += RestartDetection;
-        progressManager.Restart();
     }
 
-    private void RestartDetection()
+    public void StartDetection()
     {
         shouldDetect = true;
     }

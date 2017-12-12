@@ -13,7 +13,7 @@ public class RecorderAlt : MonoBehaviour {
 
     private int indexOfPlaybacks = 0;
 
-    public bool record = false;
+    private bool recording = false;
     private bool reInit = false;
 
 
@@ -83,14 +83,38 @@ public class RecorderAlt : MonoBehaviour {
     int currentFrame = 0;
 
 
-    void Start () {
+    //void Start () {
 
+    //    if (instance == null) instance = this;
+    //    else if (instance != this)
+    //    {
+    //        Debug.LogError("There should only be one Recording script active in the scene!!");
+    //        Destroy(gameObject);
+    //    }
+
+    //    recording = false;
+
+    //    playerRef = GameObject.FindGameObjectWithTag("Player");
+    //    playerDetector = playerRef.GetComponent<Detector>();
+
+    //    itemsPlayingBack = new PlayBackItems[maxPlaybacks];
+
+    //    for (int i = 0; i < itemsToRecord.Length; ++i)
+    //    {
+    //        itemsToRecord[i].Init(maxFramesToRecord);
+    //    }
+    //}
+
+    public void Init()
+    {
         if (instance == null) instance = this;
         else if (instance != this)
         {
             Debug.LogError("There should only be one Recording script active in the scene!!");
             Destroy(gameObject);
         }
+
+        recording = false;
 
         playerRef = GameObject.FindGameObjectWithTag("Player");
         playerDetector = playerRef.GetComponent<Detector>();
@@ -108,26 +132,27 @@ public class RecorderAlt : MonoBehaviour {
         if (currentFrame >= maxFramesToRecord)
             return;
 
-        if (record)
-        {
+        if (!recording)
+            return;
+
+            Debug.LogWarning("Recording");
             for (int i = 0; i < itemsToRecord.Length; ++i)
             {
                 itemsToRecord[i].Record(currentFrame);
             }
             currentFrame++;
-        }
 
         //NEED TO TURN THIS INTO A FUNCTION CALL
-        if (reInit)
-        {
-            reInit = false;
-            for (int i = 0; i < itemsToRecord.Length; ++i)
-            {
-                itemsToRecord[i].Init(maxFramesToRecord);
-            }
-            currentFrame = 0;
-            record = true;
-        }
+        //if (reInit)
+        //{
+        //    reInit = false;
+        //    for (int i = 0; i < itemsToRecord.Length; ++i)
+        //    {
+        //        itemsToRecord[i].Init(maxFramesToRecord);
+        //    }
+        //    currentFrame = 0;
+        //    record = true;
+        //}
         
         //else if (!beginRecording && currentFrame > 0)
         //{
@@ -139,10 +164,30 @@ public class RecorderAlt : MonoBehaviour {
 
     }
 
+    public void StopRecording()
+    {
+        recording = false;
+    }
+
+    public void StartRecording()
+    {
+        recording = true;
+    }
+
+    public void ReInit()
+    {
+        for (int i = 0; i < itemsToRecord.Length; ++i)
+        {
+            itemsToRecord[i].Init(maxFramesToRecord);
+        }
+        currentFrame = 0;
+        //recording = true;
+    }
+
     public void SpawnRecording()
     {
         Debug.Log("PlayingBack");
-        record = false;
+        //recording = false;
         
         
         if (indexOfPlaybacks < maxPlaybacks)
@@ -158,7 +203,7 @@ public class RecorderAlt : MonoBehaviour {
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<Guard>().Init(playerDetector);
             }
             indexOfPlaybacks++;
-            reInit = true;
+            //reInit = true;
             
         }
         else

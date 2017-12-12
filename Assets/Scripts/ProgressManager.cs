@@ -8,8 +8,6 @@ public class ProgressManager : MonoBehaviour {
     public Material activeDoorMaterial, inactiveDoorMaterial;
     public PostProcessingProfile ppProfile;
     public float fadeTime = 2;
-    [Space]
-    public RecorderAlt recorder;
 
     public GameObject[] startDoors, endDoors;
     List<int> startPicker, endPicker;
@@ -17,19 +15,39 @@ public class ProgressManager : MonoBehaviour {
 
     Transform player, startDoor, endDoor;
     private Mover _mover;
+    private Detector _detector;
+    private RecorderAlt _recorder;
 
     private VignetteModel.Settings vignetteSettings;
 
     public delegate void FadeInStart();
     public FadeInStart OnFadeInStart;
 
+    private enum ResetType
+    {
+        RESTARTING,
+        ADVANCING
+    }
+
+    private enum FadeType
+    {
+        IN,
+        OUT
+    }
+
+    private ResetType resetType;
+    private FadeType fadeType;
+
 
     public void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         _mover = player.GetComponent<Mover>();
-
-        vignetteSettings = ppProfile.vignette.settings;
+        _mover.Init();
+        _detector = player.GetComponent<Detector>();
+        _detector.Init(this);
+        _recorder = player.GetComponent<RecorderAlt>();
+        _recorder.Init();
 
         startDoors = GameObject.FindGameObjectsWithTag("StartDoor");
         startPicker = InitPickArray(startDoors.Length);
@@ -47,41 +65,42 @@ public class ProgressManager : MonoBehaviour {
 
         SetupNewEndDoor();
 
-        StartCoroutine(Fade("in"));
+        vignetteSettings = ppProfile.vignette.settings;
+        SetViewOpacity(1);
+        StartCoroutine(Fade(FadeType.IN));
 
         //Advance();
     }
 
     private void OnDisable()
     {
-        vignetteSettings.opacity = 0;
-        ppProfile.vignette.settings = vignetteSettings;
+        SetViewOpacity(0);
         OnFadeInStart = null;
     }
 
     public void Advance()
     {
-        //recorder.beginRecording = false;
+        resetType = ResetType.ADVANCING;
 
         startDoor = startDoors[PickNew(ref startPicker)].transform;
         endDoor = endDoors[PickNew(ref endPicker)].transform;
 
         SetupNewEndDoor();
 
-        StartCoroutine(Fade("out"));
-        OnFadeInStart += recorder.SpawnRecording;
+        StartCoroutine(Fade(FadeType.OUT));
     }
 
     public void Restart()
     {
-        StartCoroutine(Fade("out"));
+        resetType = ResetType.RESTARTING;
+        StartCoroutine(Fade(FadeType.OUT));
     }
 
     void ResetPlayerPosition()
     {
         player.transform.position = startDoor.position;
         player.transform.rotation = startDoor.rotation;
-        _mover.canMove = true;
+        //_mover.AllowMove
     }
 
     void SetupNewEndDoor()
@@ -101,8 +120,6 @@ public class ProgressManager : MonoBehaviour {
             }
         }
     }
-
-
 
     List<int> InitPickArray(int count)
     {
@@ -124,48 +141,66 @@ public class ProgressManager : MonoBehaviour {
         return picked;
     }
 
-    IEnumerator Fade(string inOrOut)
+    private void SetViewOpacity(float opacity)
     {
-        var start = 0;
-        var end = 1;
+        //DON'T CALL UNLESS VIGNETTE SETTINGS HAVE BEEN INITIALIZED!
+        vignetteSettings.opacity = opacity;
+        ppProfile.vignette.settings = vignetteSettings;
+    }
 
-        if (inOrOut == "in")
+    IEnumerator Fade(FadeType inOrOut)
+    {
+        float start, end;
+
+        switch (inOrOut)
         {
-            start = 1;
-            end = 0;
+            //****************************DO WHEN STARTING FADING IN:
+            case FadeType.IN:
+                start = 1;
+                end = 0;
+                ResetPlayerPosition();
 
-            ResetPlayerPosition();
+                if (resetType == ResetType.ADVANCING)
+                        _recorder.SpawnRecording();
 
-            if (OnFadeInStart != null)
-            {
-                OnFadeInStart();
-                OnFadeInStart = null;
-            }
-
-        } else
-        {
-            _mover.canMove = false;
-            recorder.record = false;
+                _recorder.ReInit();
+                _mover.AllowMovement(true);
+                break;
+            //**************************DO WHEN STARTING FADING OUT:
+            case FadeType.OUT:
+            default:
+                start = 0;
+                end = 1;
+                _mover.AllowMovement(false);
+                _recorder.StopRecording();
+                _detector.StopDetection();
+                break;
         }
+
 
         var transStep = 0.0f;
         while (transStep <= 1)
         {
             transStep += Time.deltaTime / fadeTime;
-            vignetteSettings.opacity = Mathf.Lerp(start, end, transStep);
+            SetViewOpacity(Mathf.Lerp(start, end, transStep));
+            //vignetteSettings.opacity = Mathf.Lerp(start, end, transStep);
 
             //Debug.LogWarning("Transstep is " + transStep);
-            ppProfile.vignette.settings = vignetteSettings;
+            //ppProfile.vignette.settings = vignetteSettings;
             yield return 0;
 
         }
 
-        if (inOrOut == "out")
+        switch (inOrOut)
         {
-            StartCoroutine(Fade("in"));
-        //    ResetPlayerPosition();
-            
-                
+            case FadeType.IN:
+                _recorder.StartRecording();
+                _detector.StartDetection();
+                break;
+            case FadeType.OUT:
+            default:
+                StartCoroutine(Fade(FadeType.IN));
+                break;
         }
     }
 }

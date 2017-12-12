@@ -19,7 +19,6 @@ public class EndDoorTrigger : MonoBehaviour {
         if (other.CompareTag("Player") && activeDoor)
         {
             progressManager.Advance();
-            //recorderRef.beginRecording = false;
         }
     }
 }
