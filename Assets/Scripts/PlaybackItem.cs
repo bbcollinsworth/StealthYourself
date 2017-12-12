@@ -45,7 +45,7 @@ public class PlaybackItem : MonoBehaviour {
 
         _thisTransform.position = preRecordedData[targetIndex].position;
         _thisTransform.rotation = preRecordedData[targetIndex].rotation;
-        _thisTransform.localScale = preRecordedData[targetIndex].scale;
+        //_thisTransform.localScale = preRecordedData[targetIndex].scale;
 
         IncrementFrame();
     }
@@ -56,7 +56,7 @@ public class PlaybackItem : MonoBehaviour {
 
         _thisTransform.position = preRecordedData[targetIndex].position;
         _thisTransform.rotation = Quaternion.Slerp(preRecordedData[targetIndex].rotation, desiredRotation,t);
-        _thisTransform.localScale = preRecordedData[targetIndex].scale;
+        //_thisTransform.localScale = preRecordedData[targetIndex].scale;
 
         IncrementFrame();
     }

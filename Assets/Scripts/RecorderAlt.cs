@@ -25,6 +25,8 @@ public class RecorderAlt : MonoBehaviour {
     }
     public typeOfLoop loopType;
 
+    public GameObject itemToSpawn;
+
     [System.Serializable]
     public struct ItemToRecord
     {
@@ -83,27 +85,6 @@ public class RecorderAlt : MonoBehaviour {
     int currentFrame = 0;
 
 
-    //void Start () {
-
-    //    if (instance == null) instance = this;
-    //    else if (instance != this)
-    //    {
-    //        Debug.LogError("There should only be one Recording script active in the scene!!");
-    //        Destroy(gameObject);
-    //    }
-
-    //    recording = false;
-
-    //    playerRef = GameObject.FindGameObjectWithTag("Player");
-    //    playerDetector = playerRef.GetComponent<Detector>();
-
-    //    itemsPlayingBack = new PlayBackItems[maxPlaybacks];
-
-    //    for (int i = 0; i < itemsToRecord.Length; ++i)
-    //    {
-    //        itemsToRecord[i].Init(maxFramesToRecord);
-    //    }
-    //}
 
     public void Init()
     {
@@ -142,26 +123,6 @@ public class RecorderAlt : MonoBehaviour {
             }
             currentFrame++;
 
-        //NEED TO TURN THIS INTO A FUNCTION CALL
-        //if (reInit)
-        //{
-        //    reInit = false;
-        //    for (int i = 0; i < itemsToRecord.Length; ++i)
-        //    {
-        //        itemsToRecord[i].Init(maxFramesToRecord);
-        //    }
-        //    currentFrame = 0;
-        //    record = true;
-        //}
-        
-        //else if (!beginRecording && currentFrame > 0)
-        //{
-        //    currentFrame = 0;
-        //    //Begin Playback
-        //    SpawnRecording();
-
-        //}
-
     }
 
     public void StopRecording()
@@ -198,7 +159,9 @@ public class RecorderAlt : MonoBehaviour {
             {
                 RecordedData[] tempRecord = new RecordedData[itemsToRecord[i].recordedData.Length];
                 tempRecord = (RecordedData[])itemsToRecord[i].recordedData.Clone();
-                itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemsToRecord[i].target.gameObject);
+                //itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemsToRecord[i].target.gameObject);
+                itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemToSpawn);
+                //itemsPlayingBack[indexOfPlaybacks].objs[i].transform.localScale = Vector3.one * 4;
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<PlaybackItem>().preRecordedData = tempRecord;
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<Guard>().Init(playerDetector);
             }

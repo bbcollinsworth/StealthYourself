@@ -43,7 +43,7 @@ public class Guard : MonoBehaviour {
     {
         Vector3 vecToTarget = transform.position - _detector.playerHead.position;
         float angleToDirectView = Vector3.Dot(-vecToTarget.normalized, transform.forward);
-        Color drawColor = Color.black;
+        Color drawColor = Color.red;
 
         bool viewObstructed = ViewObstructed(vecToTarget);
         //Debug.Log("View obstructed is " + viewObstructed);

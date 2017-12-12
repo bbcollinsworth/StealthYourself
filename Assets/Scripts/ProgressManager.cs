@@ -17,6 +17,7 @@ public class ProgressManager : MonoBehaviour {
     private Mover _mover;
     private Detector _detector;
     private RecorderAlt _recorder;
+    private AudioSource _successSound;
 
     private VignetteModel.Settings vignetteSettings;
 
@@ -49,6 +50,8 @@ public class ProgressManager : MonoBehaviour {
         _recorder = player.GetComponent<RecorderAlt>();
         _recorder.Init();
 
+        _successSound = GetComponent<AudioSource>();
+
         startDoors = GameObject.FindGameObjectsWithTag("StartDoor");
         startPicker = InitPickArray(startDoors.Length);
         
@@ -63,7 +66,7 @@ public class ProgressManager : MonoBehaviour {
         startDoor = startDoors[PickNew(ref startPicker)].transform;
         endDoor = endDoors[PickNew(ref endPicker)].transform;
 
-        SetupNewEndDoor();
+        //SetupNewEndDoor();
 
         vignetteSettings = ppProfile.vignette.settings;
         SetViewOpacity(1);
@@ -82,10 +85,12 @@ public class ProgressManager : MonoBehaviour {
     {
         resetType = ResetType.ADVANCING;
 
+        _successSound.Play();
+
         startDoor = startDoors[PickNew(ref startPicker)].transform;
         endDoor = endDoors[PickNew(ref endPicker)].transform;
 
-        SetupNewEndDoor();
+        //SetupNewEndDoor();
 
         StartCoroutine(Fade(FadeType.OUT));
     }
@@ -158,6 +163,7 @@ public class ProgressManager : MonoBehaviour {
             case FadeType.IN:
                 start = 1;
                 end = 0;
+                SetupNewEndDoor();
                 ResetPlayerPosition();
 
                 if (resetType == ResetType.ADVANCING)
