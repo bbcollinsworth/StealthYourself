@@ -2,6 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public struct RecordedData
+{
+    public Vector3 position { get; private set; }
+    public Quaternion rotation { get; private set; }
+    public Vector3 scale { get; private set; }
+    public int itemState;
+
+    public RecordedData(Transform t, int state)
+    {
+        position = t.position;
+        rotation = t.rotation;
+        scale = t.localScale;
+        itemState = state;
+    }
+
+    public RecordedData(Vector3 pos, Quaternion rot)
+    {
+        position = pos;
+        rotation = rot;
+        scale = Vector3.one;
+        itemState = 1;
+    }
+}
+
 public class RecorderAlt : MonoBehaviour {
 
     private GameObject playerRef;
@@ -12,6 +37,8 @@ public class RecorderAlt : MonoBehaviour {
     public int maxPlaybacks = 10;
 
     private int indexOfPlaybacks = 0;
+
+    public bool isRecording { get { return recording; } }
 
     private bool recording = false;
     private bool reInit = false;
@@ -44,7 +71,7 @@ public class RecorderAlt : MonoBehaviour {
         {
             if (frame >= recordedData.Length)
             {
-                Debug.LogWarning("Attempting to record data beyond max frames limit.");
+                Debug.LogWarning("Attempting to store data beyond initial size of recording array.");
                 return;
             }
 
@@ -65,23 +92,6 @@ public class RecorderAlt : MonoBehaviour {
     }
     public PlayBackItems[] itemsPlayingBack;    
 
-    [System.Serializable]
-    public struct RecordedData
-    {
-        public Vector3 position { get; private set; }
-        public Quaternion rotation { get; private set; }
-        public Vector3 scale { get; private set; }
-        public int itemState;
-
-        public RecordedData(Transform t, int state)
-        {
-            position = t.position;
-            rotation = t.rotation;
-            scale = t.localScale;
-            itemState = state;
-        }
-    }
-
     int currentFrame = 0;
 
 
@@ -98,7 +108,14 @@ public class RecorderAlt : MonoBehaviour {
         recording = false;
 
         playerRef = GameObject.FindGameObjectWithTag("Player");
-        playerDetector = playerRef.GetComponent<Detector>();
+        if (playerRef == null)
+        {
+            Debug.LogError("No Player tagged object found");
+        } else
+        {
+            playerDetector = playerRef.GetComponent<Detector>();
+        }
+        
 
         itemsPlayingBack = new PlayBackItems[maxPlaybacks];
 
@@ -145,6 +162,18 @@ public class RecorderAlt : MonoBehaviour {
         //recording = true;
     }
 
+    public void SaveRecording()
+    {
+        for (int i = 0; i < itemsToRecord.Length; ++i)
+        {
+            RecordedData[] tempRecord = new RecordedData[itemsToRecord[i].recordedData.Length];
+            tempRecord = (RecordedData[])itemsToRecord[i].recordedData.Clone();
+
+            //DataToTexture.StoreArrayInTexture(tempRecord)
+            DataToTexture.StoreDataInTexture(tempRecord, itemsToRecord[i].name);
+        }
+    }
+
     public void SpawnRecording()
     {
         Debug.Log("PlayingBack");
@@ -185,5 +214,22 @@ public class RecorderAlt : MonoBehaviour {
             SpawnRecording();
 
         }
+    }
+
+    public void SpawnRecordingWithSavedData(RecordedData[] savedData)
+    {
+        Debug.Log("PlayingBack");
+        //recording = false;
+
+            itemsPlayingBack[indexOfPlaybacks].Init(itemsToRecord.Length);
+
+            for (int i = 0; i < itemsToRecord.Length; ++i)
+            {                
+                itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemToSpawn);
+                itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<PlaybackItem>().preRecordedData = savedData;
+            }
+            //indexOfPlaybacks++;
+            //reInit = true;
+
     }
 }

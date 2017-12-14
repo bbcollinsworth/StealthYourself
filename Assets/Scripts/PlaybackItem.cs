@@ -5,13 +5,15 @@ using UnityEngine;
 public class PlaybackItem : MonoBehaviour {
 
     [HideInInspector]
-    public RecorderAlt.RecordedData[] preRecordedData;
+    public RecordedData[] preRecordedData;
     private Transform _thisTransform;
     private int _currFrame;
     private int _frameIncrement = 1;
 
     private int _lastIndex = -1;
     private RecorderAlt.typeOfLoop loopType;
+
+    private bool hasGuardComponent = false;
 
     private void Start()
     {
@@ -20,21 +22,30 @@ public class PlaybackItem : MonoBehaviour {
 
         loopType = RecorderAlt.instance.loopType;
 
-        for (int i = 0; i < preRecordedData.Length; i++)
-        {
-            if (preRecordedData[i].scale == Vector3.zero)
-            {
-                _lastIndex = i-1;
-                break;
-            }
+        _lastIndex = preRecordedData.Length;
 
-        }
+        //for (int i = 0; i < preRecordedData.Length; i++)
+        //{
+        //    if (preRecordedData[i].scale == Vector3.zero)
+        //    {
+        //        _lastIndex = i-1;
+        //        break;
+        //    }
+
+        //}
+
+        if (GetComponent<Guard>() != null)
+            hasGuardComponent = true;
+
+        Debug.LogWarning("Prerecorded data length is " + preRecordedData.Length);
     }
 
     public void Update()
     {
+        if (hasGuardComponent)
+            return;
 
-        //UpdateTransform(_currFrame);
+        UpdateTransform();
 
         //IncrementFrame();
     }
@@ -43,9 +54,14 @@ public class PlaybackItem : MonoBehaviour {
     {
         var targetIndex = _currFrame;
 
+        //Debug.LogWarning("Current frame is " + _currFrame);
+
         _thisTransform.position = preRecordedData[targetIndex].position;
         _thisTransform.rotation = preRecordedData[targetIndex].rotation;
         //_thisTransform.localScale = preRecordedData[targetIndex].scale;
+
+        Debug.Log("Updating position to: " + preRecordedData[targetIndex].position + "; updating rotation to: " +
+            preRecordedData[targetIndex].rotation);
 
         IncrementFrame();
     }
@@ -63,6 +79,8 @@ public class PlaybackItem : MonoBehaviour {
 
     void IncrementFrame()
     {
+        _currFrame += _frameIncrement;
+
         switch (loopType)
         {
             case RecorderAlt.typeOfLoop.PINGPONG:
@@ -80,7 +98,7 @@ public class PlaybackItem : MonoBehaviour {
                 break;
         }
 
-        _currFrame += _frameIncrement;
+        //_currFrame += _frameIncrement;
 
     }
 
