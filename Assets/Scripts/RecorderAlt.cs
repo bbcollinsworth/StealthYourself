@@ -9,6 +9,7 @@ public struct RecordedData
     public Quaternion rotation { get; private set; }
     public Vector3 scale { get; private set; }
     public int itemState;
+    public bool hasData { get; private set; }
 
     public RecordedData(Transform t, int state)
     {
@@ -16,6 +17,7 @@ public struct RecordedData
         rotation = t.rotation;
         scale = t.localScale;
         itemState = state;
+        hasData = true;
     }
 
     public RecordedData(Vector3 pos, Quaternion rot)
@@ -24,6 +26,7 @@ public struct RecordedData
         rotation = rot;
         scale = Vector3.one;
         itemState = 1;
+        hasData = true;
     }
 }
 
@@ -133,7 +136,7 @@ public class RecorderAlt : MonoBehaviour {
         if (!recording)
             return;
 
-            Debug.LogWarning("Recording");
+            //Debug.LogWarning("Recording");
             for (int i = 0; i < itemsToRecord.Length; ++i)
             {
                 itemsToRecord[i].Record(currentFrame);
@@ -166,11 +169,11 @@ public class RecorderAlt : MonoBehaviour {
     {
         for (int i = 0; i < itemsToRecord.Length; ++i)
         {
-            RecordedData[] tempRecord = new RecordedData[itemsToRecord[i].recordedData.Length];
-            tempRecord = (RecordedData[])itemsToRecord[i].recordedData.Clone();
+            //RecordedData[] tempRecord = new RecordedData[itemsToRecord[i].recordedData.Length];
+            //tempRecord = (RecordedData[])itemsToRecord[i].recordedData.Clone();
+            RecordedData[] tempRecord = TrimRecordedData(itemsToRecord[i].recordedData);
 
-            //DataToTexture.StoreArrayInTexture(tempRecord)
-            DataToTexture.StoreDataInTexture(tempRecord, itemsToRecord[i].name);
+            DataToTexture.StoreDataInTextures(tempRecord, itemsToRecord[i].name);
         }
     }
 
@@ -188,9 +191,7 @@ public class RecorderAlt : MonoBehaviour {
             {
                 RecordedData[] tempRecord = new RecordedData[itemsToRecord[i].recordedData.Length];
                 tempRecord = (RecordedData[])itemsToRecord[i].recordedData.Clone();
-                //itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemsToRecord[i].target.gameObject);
                 itemsPlayingBack[indexOfPlaybacks].objs[i] = Instantiate(itemToSpawn);
-                //itemsPlayingBack[indexOfPlaybacks].objs[i].transform.localScale = Vector3.one * 4;
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<PlaybackItem>().preRecordedData = tempRecord;
                 itemsPlayingBack[indexOfPlaybacks].objs[i].AddComponent<Guard>().Init(playerDetector);
             }
@@ -231,5 +232,35 @@ public class RecorderAlt : MonoBehaviour {
             //indexOfPlaybacks++;
             //reInit = true;
 
+    }
+
+    public RecordedData[] TrimRecordedData(RecordedData[] recData)
+    {
+        if (recData[recData.Length - 1].hasData)
+        {
+            return recData;
+        }
+
+        var trimmedLength = recData.Length;
+
+        for (int i=0; i<recData.Length; ++i)
+        {
+            if (!recData[i].hasData)
+            {
+                trimmedLength = i;
+                break;
+            }
+        }
+
+        RecordedData[] toReturn = new RecordedData[trimmedLength];
+
+        for (int i = 0; i<toReturn.Length; ++i)
+        {
+            toReturn[i] = recData[i];
+        }
+
+        Debug.LogWarning("Recorded data trimmed to " + trimmedLength);
+
+        return toReturn;
     }
 }
