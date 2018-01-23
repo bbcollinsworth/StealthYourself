@@ -11,46 +11,6 @@ public class StoreDataInTextureTest : MonoBehaviour {
 
     Vector3[] testArray;
 
-	// Use this for initialization
-	void Start () {
-        //testArray = MakeArray(512*512);
-        //Texture2D newTexture = new Texture2D(512, 512, TextureFormat.ARGB32, false);
-        //newTexture.SetPixels(VecToColor(testArray));
-        //newTexture.Apply();
-        //byte[] bytes = newTexture.EncodeToPNG();
-        //File.WriteAllBytes(Application.streamingAssetsPath + "/RenderTest/test.png", bytes);
-    }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
-    //Vector3[] MakeArray(int size)
-    //{
-    //    Vector3[] array = new Vector3[size];
-
-    //    //float dist = maxDist;
-
-    //    for (int i= 0; i<array.Length; ++i)
-    //    {
-    //        array[i] = new Vector3(Random.value * maxDist, Random.value * maxDist, Random.value * maxDist);
-    //        array[i] /= maxDist;
-    //    }
-
-    //    return array;
-    //}
-
-    //Color[] VecToColor(Vector3[] vecArray)
-    //{
-    //    Color[] colArray = new Color[vecArray.Length];
-    //    for (int i = 0; i<colArray.Length; ++i)
-    //    {
-    //        colArray[i] = new Color(vecArray[i].x, vecArray[i].y, vecArray[i].z);
-    //    }
-
-    //    return colArray;
-    //}
 
     static Vector3 PackPositionData(Vector3 pos, float maxDistance)
     {
@@ -106,12 +66,4 @@ public class StoreDataInTextureTest : MonoBehaviour {
         File.WriteAllBytes(Application.streamingAssetsPath + "/test.png", bytes);
     }
 
-    //void StoreArrayInTexture(Color[] array)
-    //{
-    //    Texture2D newTexture = new Texture2D(512, 512, TextureFormat.ARGB32, false);
-    //    newTexture.SetPixels(array);
-    //    newTexture.Apply();
-    //    byte[] bytes = newTexture.EncodeToPNG();
-    //    File.WriteAllBytes(Application.streamingAssetsPath + "/RenderTest/test.png", bytes);
-    //}
 }
